@@ -21,9 +21,10 @@ public:
     dynamicArray(const int&);//size and type of arrray?
     //dynamicArray(const T[]&);//sizeof?
 
-    dynamicArray(const dynamicArray<T>&); // copy constructor
-    ~dynamicArray() {delete [] array; array = nullptr;}; //destructor
+    ~dynamicArray();//destructor
     dynamicArray<T>& operator=(dynamicArray<T>&); //assignment operator
+    dynamicArray(const dynamicArray<T>&); // copy constructor
+    dynamicArray(const dynamicArray&& ) noexcept; // move constructor
 
     void print();
     T get(int&) const; //accessor
@@ -36,7 +37,7 @@ public:
 
 template <typename T>
 dynamicArray<T>::dynamicArray() {
-    size_ = nullptr;
+    size_ = 0;
     array = nullptr;
 }
 
@@ -50,6 +51,38 @@ template <typename T>
 dynamicArray<T>::dynamicArray(const int &size) {
     size_ = size;
     array = new T[size_] {0};
+}
+
+
+template <typename T>
+dynamicArray<T>::dynamicArray(const dynamicArray<T>& copy) {
+    //protect against self assignment
+    if (this != &copy) {
+        size_ = copy.size_;
+        array = new T[size_] {0};
+        std::cout << "Copy Constructor.";
+    }
+}
+
+template <typename T>
+dynamicArray<T>::dynamicArray(const dynamicArray<T>&& copy) noexcept {
+    //protect against self assignment
+    if (this != &copy) {
+        size_ = copy.size_;
+        array = copy.array; //move constructor, just move the pointer
+
+        //since you stole the "copies" pointer, here we must set to mullptr
+        copy.array = nullptr;
+
+        std::cout << "Move Constructor.";
+    }
+}
+
+template <typename T>
+dynamicArray<T>::~dynamicArray() {
+    delete [] array;
+    array = nullptr;
+    std::cout << "Destructor, array!";
 }
 
 template <typename T>
@@ -72,8 +105,9 @@ dynamicArray<T>& dynamicArray<T>::operator=(dynamicArray<T>& copy) {
         size_ = copy.size_;
         this(size_);
         return *this;
-    }
+    } else return *this;
 }
+
 
 template <typename T>
 T dynamicArray<T>::get(int& index) const {
